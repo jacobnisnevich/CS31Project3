@@ -272,6 +272,9 @@ int main()
 	bool repeatTest = true;
 
 	do {
+		cin.clear();
+		cin.sync();
+
 		cout << "Enter the subject line of the email: ";
 		string subject = "";
 		getline(cin, subject);
