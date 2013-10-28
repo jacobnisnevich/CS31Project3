@@ -2,35 +2,63 @@
 #include <iostream>
 using namespace std;
 
+// function prototyping
+
 string getFirstWord(string theString);
 string getLastWord(string theString);
+int wordCounter(string theString);
 string extractWord(string& theString);
 bool isUppercase(string theString);
 string makeUppercase(string theString);
 bool hasMultipleExclamations(string theString);
 bool isGibberishWord(string theString);
+int uppercaseSubjectTest(string theSubject);
+int consonantSubjectTest(string theSubject);
+int exclamationSubjectTest(string theSubject);
+int uppercaseBodyTest(string theBody);
+int specialWordBodyTest(string theBody);
 bool isSpam(string theSubject, string theBody);
+
+// declaration/initialization of spamScore counter
 
 int spamScore = 0;
 
-string getFirstWord(string theString)
+// function that copies the first word from a string and returns it
+
+string getFirstWordImpl(string theString, int& lastPos)
 {
+	lastPos = 0;
 	int length = theString.length();
+	int i = 0;
 	string theResult = "";
-	for (int i = 0; i < length; i++)
+	for ( ; i < length; i++)
 	{
 		if (isalpha(theString[i]))
+		{
 			theResult += theString[i];
-		if (theString[i] == ' ' || isalpha(theString[i]) == 0)
-			i = length;
+		}
+		if ((theString[i] == ' ' || !(isalpha(theString[i]))) && theResult != "")
+		{
+			break;
+		}
 	}
+	lastPos = i;
 	return theResult;
 }
+
+string getFirstWord(string theString)
+{
+	int lastPos = 0;
+	return getFirstWordImpl(theString, lastPos);
+}
+
+// function that copies the last word from a string and returns it
 
 string getLastWord(string theString)
 {
 	int length = theString.length();
 	string theResult = "";
+	string intermediate = "";
 	int numSpaces = 0;
 	int finalStart = 0;
 	for (int i = 0; i < length; i++)
@@ -45,11 +73,19 @@ string getLastWord(string theString)
 		if (numSpaces == 0)
 			finalStart = i + 1;
 	}
-	theResult = theString.substr(finalStart,length);
+	intermediate = theString.substr(finalStart,length);
+	int lengthIntermediate = intermediate.length();
+	for (int i = 0; i < lengthIntermediate; i++)
+	{
+		if (isalpha(intermediate[i]))
+			theResult += intermediate[i];
+	}
 	return theResult;
 }
 
-int wordCounter(string theString)
+// function that counts and returns the number of words in a string
+
+int wordCounter(string theString)	
 {
 	int wordCounter = 0;
 	do {
@@ -57,46 +93,35 @@ int wordCounter(string theString)
 		wordCounter++;
 	}
 	while (theString.length() > 0);
-	return wordCounter;
+	return (wordCounter - 1);
 }
+
+// function that copies and removes the first word from a string and returns it
 
 string extractWord(string& theString)
 {
-	int counter = 1;
-	for (int i = 0; i < counter; i++)
-	{
-		if (isalpha(theString[i]) == 0)
-			counter++;
-		else
-			i = counter;
-	}
-	theString.erase(0, (counter - 1));
-	string firstWord = getFirstWord(theString);
-	int length = theString.length();
-	int letterCounter = 0;
-	for (int i = 0; i < length; i++)
-	{
-		if (theString[i] != ' ')
-			letterCounter++;
-		if (theString[i] == ' ')
-			i = length;
-	}
-	theString.erase(0, letterCounter);
+	int lastPos = 0;
+	string firstWord = getFirstWordImpl(theString, lastPos);
+	theString = theString.substr(lastPos);
 	return firstWord;
 }
+
+// function that tests if a string is uppercase
 
 bool isUppercase(string theString)
 {
 	int length = theString.length();
 	int lowerCounter = 0;
 	for (int i = 0; i != length; i++)
-		if (isupper(theString[i]) == 0)
+		if (isalpha(theString[i]) && !(isupper(theString[i])))
 			lowerCounter++;
 	if (lowerCounter > 0)
 		return false;
 	else 
 		return true;
 }
+
+// function that makes a string uppercase
 
 string makeUppercase(string theString)
 {
@@ -111,6 +136,8 @@ string makeUppercase(string theString)
 	}
 	return theResult;
 }
+
+// function that tests if a string has three or more exclamations in a row
 
 bool hasMultipleExclamations(string theString)
 {
@@ -130,6 +157,8 @@ bool hasMultipleExclamations(string theString)
 	else
 		return false;
 }
+
+// function that tests if a string has four or more consecutive consonantsT
 
 bool isGibberishWord(string theString)
 {
@@ -160,12 +189,14 @@ bool isGibberishWord(string theString)
 		return false;
 }
 
+// function that tests if the subject is 90%+ uppercase
+
 int uppercaseSubjectTest(string theSubject)
 {
 	string tempWord = "";
 	int score = 0;
-	float upperCount = 0;
-	float wordCount = wordCounter(theSubject);
+	int upperCount = 0;
+	int wordCount = wordCounter(theSubject);
 	const double UPPER_THRESHOLD = 0.90;
 
 	for (int i = 0; i < wordCount; i++)
@@ -177,7 +208,7 @@ int uppercaseSubjectTest(string theSubject)
 		}
 	}
 
-	float percentUpper = upperCount / wordCount;
+	float percentUpper = (float)upperCount / (float)wordCount;
 	
 	if (percentUpper > UPPER_THRESHOLD)
 		score = 30;
@@ -185,34 +216,40 @@ int uppercaseSubjectTest(string theSubject)
 	return score;
 }
 
+// function that tests if the subject has a gibberish last word
+
 int consonantSubjectTest(string theSubject)
 {
 	int score = 0;
 	string tempLastWord = getLastWord(theSubject);
 
 	if (isGibberishWord(tempLastWord))
-		score += 40;
+		score = 40;
 
 	return score;
 }
+
+// function that tests if the subject has three or more exclamation marks in a row
 
 int exclamationSubjectTest(string theSubject)
 {
 	int score = 0;
 
 	if (hasMultipleExclamations(theSubject))
-		score += 20;
+		score = 20;
 
 	return score;
 }
+
+// function that tests if the body is 50%+ uppercase
 
 int uppercaseBodyTest(string theBody)
 {
 	int score = 0;
 	
 	string tempBodyWord = "";
-	float bodyUpperCount = 0;
-	float bodyWordCount = 1;
+	int bodyUpperCount = 0;
+	int bodyWordCount = wordCounter(theBody);
 	float const UPPER_BODY_THRESHOLD = 0.50;
 
 	for (int i = 0; i < bodyWordCount; i++)
@@ -221,21 +258,61 @@ int uppercaseBodyTest(string theBody)
 		if (isUppercase(tempBodyWord))
 		{
 			bodyUpperCount++;
-			bodyWordCount++;
 		}
-		else
-			bodyWordCount++;
 	}
 
-	float percentBodyUpper = bodyUpperCount / bodyWordCount;
+	float percentBodyUpper = (float)bodyUpperCount / (float)bodyWordCount;
 	
 	if (percentBodyUpper > UPPER_BODY_THRESHOLD)
-		score += 40;
+		score = 40;
 
 	return score;
 }
 
-bool isSpam(string theSubject/*, string theBody*/)
+// function that checks for any of 13 special words in the body
+
+int specialWordBodyTest(string theBody)
+{
+	int score = 0;
+
+	string tempBodyWord = "";
+	string lowerWord= "";
+	int specialWordCounter = 0;
+	int bodyWordCount = wordCounter(theBody);
+
+	for (int i = 0; i < bodyWordCount; i++)
+	{
+		tempBodyWord = extractWord(theBody);
+		int length = tempBodyWord.length();
+		lowerWord = "";
+		for (int i = 0; i < length; i++)
+			lowerWord += tolower(tempBodyWord[i]);
+		if (lowerWord == "buy" || 
+			lowerWord == "cheap" ||
+			lowerWord == "click" ||
+			lowerWord == "diploma" ||
+			lowerWord == "enlarge" ||
+			lowerWord == "free" ||
+			lowerWord == "lonely" ||
+			lowerWord == "money" ||
+			lowerWord == "now" ||
+			lowerWord == "offer" ||
+			lowerWord == "only" ||
+			lowerWord == "pills" ||
+			lowerWord == "sex")
+		{
+			specialWordCounter++;
+		}
+	}
+
+	score = specialWordCounter * 5;
+
+	return score;
+}
+
+// function that combines the subject and body tests and returns whether an email is spam or not
+
+bool isSpam(string theSubject, string theBody)
 {
 	// > 90% uppercase words in subject test
 
@@ -251,11 +328,11 @@ bool isSpam(string theSubject/*, string theBody*/)
 
 	// body has > 0 words, 50% of words uppercase test
 
-	//spamScore += uppercaseBodyTest(theBody);
+	spamScore += uppercaseBodyTest(theBody);
 
 	// special words test
 	
-	
+	spamScore += specialWordBodyTest(theBody);
 
 	// score calculator
 
@@ -267,23 +344,50 @@ bool isSpam(string theSubject/*, string theBody*/)
 
 int main()
 {
+	// declaration and initialization of spam and legitimate email counters
 	int spamCounter = 0;
 	int legitCounter = 0;
 	bool repeatTest = true;
 
+	// main loop that continues until user stops testing emails
+
 	do {
+
+		// clears getline input from cin
+
 		cin.clear();
 		cin.sync();
+
+		// subject line input
 
 		cout << "Enter the subject line of the email: ";
 		string subject = "";
 		getline(cin, subject);
 
-		//cout << "Enter the body of the email.  Press Enter on an empty line to finish.";
-		//string body;
-		//getline(cin, body);
+		// clears getline input from cin
 
-		if (isSpam(subject))
+		cin.clear();
+		cin.sync();
+
+		// email body input
+
+		cout << "Enter the body of the email.  Press Enter on an empty line to finish. " << endl;
+
+		// stores lines of body into body variable
+
+		string temp = "";
+		string body = "";
+		do	{
+			cin.clear();
+			cin.sync();
+			getline(cin, temp);
+			body += temp + " ";
+		}
+		while (!temp.empty());
+
+		// spam test that returns either spam or legitimate result
+
+		if (isSpam(subject, body))
 		{
 			spamCounter++;
 			cout << "This email is classified as spam, because its spam score is " << spamScore << endl;
@@ -294,8 +398,12 @@ int main()
 			cout << "This email is classified as legitimate, because its spam score is " << spamScore << endl;
 		}
 
+		// loop that checks if you want to classify additional emails
+
 		bool repeatResponse = true;
 		do {
+			cin.clear();
+			cin.sync();
 
 			cout << "Would you like to classify another email (y or n)? ";
 			string response = "";
@@ -304,10 +412,12 @@ int main()
 			{
 				repeatTest = true;
 				repeatResponse = false;
+				spamScore = 0;
 			}
 			if (response == "n")
 			{
 				repeatTest = false;
+				cout << endl;
 				cout << "Number of spam messages: " << spamCounter << endl;
 				cout << "Number of legitimate messages: " << legitCounter << endl;
 				repeatResponse = false;
