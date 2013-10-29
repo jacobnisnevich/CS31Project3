@@ -17,11 +17,7 @@ int consonantSubjectTest(string theSubject);
 int exclamationSubjectTest(string theSubject);
 int uppercaseBodyTest(string theBody);
 int specialWordBodyTest(string theBody);
-bool isSpam(string theSubject, string theBody);
-
-// declaration/initialization of spamScore counter
-
-int spamScore = 0;
+bool isSpam(string theSubject, string theBody, int& spamScore);
 
 // function that copies the first word from a string and returns it
 
@@ -312,7 +308,7 @@ int specialWordBodyTest(string theBody)
 
 // function that combines the subject and body tests and returns whether an email is spam or not
 
-bool isSpam(string theSubject, string theBody)
+bool isSpam(string theSubject, string theBody, int& spamScore)
 {
 	// > 90% uppercase words in subject test
 
@@ -345,6 +341,7 @@ bool isSpam(string theSubject, string theBody)
 int main()
 {
 	// declaration and initialization of spam and legitimate email counters
+	int spamScore = 0;
 	int spamCounter = 0;
 	int legitCounter = 0;
 	bool repeatTest = true;
@@ -387,7 +384,7 @@ int main()
 
 		// spam test that returns either spam or legitimate result
 
-		if (isSpam(subject, body))
+		if (isSpam(subject, body, spamScore))
 		{
 			spamCounter++;
 			cout << "This email is classified as spam, because its spam score is " << spamScore << endl;
